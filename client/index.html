@@ -1,0 +1,1065 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multitenant ERP — Frontend Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ── DESIGN TOKENS ────────────────────────────────────── */
+      :root {
+        --bg: #0d0f12;
+        --surface: #141720;
+        --border: #232834;
+        --border2: #2e3545;
+        --muted: #4a5368;
+        --dim: #7a8399;
+        --text: #c8d0e0;
+        --bright: #e8edf5;
+        --accent: #4f8ef7;
+        --green: #3ecf6e;
+        --red: #f75f5f;
+        --amber: #f5a623;
+        --purple: #9b72f5;
+        --mono: "IBM Plex Mono", monospace;
+        --sans: "IBM Plex Sans", sans-serif;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 14px;
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: 48px 1fr;
+        grid-template-columns: 340px 1fr;
+      }
+
+      /* ── TOPBAR ───────────────────────────────────────────── */
+      header {
+        grid-column: 1 / -1;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        gap: 12px;
+      }
+      header .logo {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--accent);
+        letter-spacing: 0.05em;
+      }
+      header .sep {
+        color: var(--border2);
+      }
+      header .tagline {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      #status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--muted);
+        margin-left: auto;
+        transition: background 0.3s;
+      }
+      #status-dot.online {
+        background: var(--green);
+        box-shadow: 0 0 6px var(--green);
+      }
+      #status-dot.offline {
+        background: var(--red);
+      }
+      #status-label {
+        font-size: 11px;
+        color: var(--dim);
+      }
+
+      /* ── LEFT PANEL — AUTH ────────────────────────────────── */
+      aside {
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+      .panel-title {
+        padding: 14px 18px 10px;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--border);
+      }
+
+      /* User cards */
+      .user-list {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .user-card {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .user-card:hover {
+        border-color: var(--border2);
+        background: #17202b;
+      }
+      .user-card.active {
+        border-color: var(--accent);
+        background: rgba(79, 142, 247, 0.06);
+      }
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 500;
+        flex-shrink: 0;
+      }
+      .avatar-admin {
+        background: rgba(79, 142, 247, 0.15);
+        color: var(--accent);
+      }
+      .avatar-accountant {
+        background: rgba(62, 207, 110, 0.12);
+        color: var(--green);
+      }
+      .avatar-viewer {
+        background: rgba(74, 83, 104, 0.3);
+        color: var(--muted);
+      }
+      .avatar-b {
+        background: rgba(245, 166, 35, 0.12);
+        color: var(--amber);
+      }
+      .user-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .user-name {
+        font-size: 13px;
+        color: var(--bright);
+        font-weight: 500;
+      }
+      .user-meta {
+        font-size: 11px;
+        color: var(--dim);
+        margin-top: 1px;
+      }
+      .role-badge {
+        font-family: var(--mono);
+        font-size: 9px;
+        padding: 2px 6px;
+        border-radius: 3px;
+        letter-spacing: 0.05em;
+        font-weight: 500;
+      }
+      .badge-admin {
+        background: rgba(79, 142, 247, 0.15);
+        color: var(--accent);
+      }
+      .badge-accountant {
+        background: rgba(62, 207, 110, 0.12);
+        color: var(--green);
+      }
+      .badge-viewer {
+        background: rgba(74, 83, 104, 0.3);
+        color: var(--muted);
+      }
+
+      /* Token section */
+      .token-section {
+        padding: 12px;
+        border-top: 1px solid var(--border);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .token-box {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+      }
+      .token-label {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .token-raw {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--dim);
+        word-break: break-all;
+        line-height: 1.5;
+      }
+      .token-raw span.h {
+        color: var(--red);
+      }
+      .token-raw span.p {
+        color: var(--accent);
+      }
+      .token-raw span.s {
+        color: var(--green);
+      }
+
+      /* Claims display */
+      .claims-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .claim-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .claim-row:last-child {
+        border-bottom: none;
+      }
+      .claim-key {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--dim);
+      }
+      .claim-val {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--bright);
+        text-align: right;
+        max-width: 60%;
+      }
+      .claim-val.green {
+        color: var(--green);
+      }
+      .claim-val.accent {
+        color: var(--accent);
+      }
+      .claim-val.amber {
+        color: var(--amber);
+      }
+
+      .login-btn {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 9px 14px;
+        font-family: var(--mono);
+        font-size: 12px;
+        cursor: pointer;
+        width: 100%;
+        letter-spacing: 0.04em;
+        transition: opacity 0.15s;
+      }
+      .login-btn:hover {
+        opacity: 0.85;
+      }
+      .login-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+
+      /* ── RIGHT PANEL — API INTERACTION ───────────────────── */
+      main {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        overflow: hidden;
+      }
+
+      .api-toolbar {
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .api-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        padding: 7px 13px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text);
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          color 0.15s;
+      }
+      .api-btn:hover {
+        border-color: var(--accent);
+        color: var(--bright);
+      }
+      .api-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+      .method {
+        font-size: 10px;
+        font-weight: 500;
+        padding: 1px 5px;
+        border-radius: 3px;
+      }
+      .m-get {
+        background: rgba(62, 207, 110, 0.12);
+        color: var(--green);
+      }
+      .m-post {
+        background: rgba(79, 142, 247, 0.12);
+        color: var(--accent);
+      }
+      .m-delete {
+        background: rgba(247, 95, 95, 0.12);
+        color: var(--red);
+      }
+
+      /* Log area */
+      .log-area {
+        overflow-y: auto;
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .log-entry {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        animation: slideIn 0.2s ease;
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .log-header {
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg);
+      }
+      .log-method {
+        font-size: 10px;
+        font-weight: 500;
+      }
+      .log-url {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--dim);
+        flex: 1;
+      }
+      .log-status {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 500;
+        padding: 1px 7px;
+        border-radius: 3px;
+      }
+      .s-ok {
+        background: rgba(62, 207, 110, 0.12);
+        color: var(--green);
+      }
+      .s-err {
+        background: rgba(247, 95, 95, 0.12);
+        color: var(--red);
+      }
+      .log-body {
+        padding: 10px 12px;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.7;
+        color: var(--dim);
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+      .log-body .key {
+        color: var(--dim);
+      }
+      .log-body .str {
+        color: var(--green);
+      }
+      .log-body .num {
+        color: var(--amber);
+      }
+      .log-body .bool {
+        color: var(--purple);
+      }
+      .log-body .null {
+        color: var(--red);
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--muted);
+      }
+      .empty-state .icon {
+        font-size: 32px;
+        margin-bottom: 10px;
+        opacity: 0.4;
+      }
+      .empty-state p {
+        font-size: 13px;
+      }
+
+      /* Modal for POST invoice */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+      .modal {
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        border-radius: 10px;
+        padding: 20px;
+        width: 340px;
+      }
+      .modal h3 {
+        font-size: 14px;
+        color: var(--bright);
+        margin-bottom: 14px;
+        font-weight: 500;
+      }
+      .field {
+        margin-bottom: 10px;
+      }
+      .field label {
+        display: block;
+        font-size: 11px;
+        color: var(--dim);
+        margin-bottom: 4px;
+        font-family: var(--mono);
+      }
+      .field input {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border2);
+        border-radius: 5px;
+        padding: 7px 10px;
+        color: var(--bright);
+        font-family: var(--mono);
+        font-size: 12px;
+        outline: none;
+      }
+      .field input:focus {
+        border-color: var(--accent);
+      }
+      .modal-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .btn-cancel {
+        flex: 1;
+        padding: 8px;
+        background: transparent;
+        border: 1px solid var(--border2);
+        border-radius: 5px;
+        color: var(--dim);
+        font-family: var(--mono);
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .btn-submit {
+        flex: 1;
+        padding: 8px;
+        background: var(--accent);
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+        font-family: var(--mono);
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .btn-submit:hover {
+        opacity: 0.85;
+      }
+
+      /* Permissions legend */
+      .perms-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .perm-chip {
+        font-family: var(--mono);
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 3px;
+        background: rgba(62, 207, 110, 0.1);
+        color: var(--green);
+      }
+      .perm-chip.missing {
+        background: rgba(74, 83, 104, 0.2);
+        color: var(--muted);
+        text-decoration: line-through;
+      }
+
+      .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 4px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- TOP BAR -->
+    <header>
+      <span class="logo">ERP//MT</span>
+      <span class="sep">|</span>
+      <span class="tagline">Multitenant API demo — localhost:3000</span>
+      <span id="status-dot"></span>
+      <span id="status-label">checking...</span>
+    </header>
+
+    <!-- LEFT PANEL: AUTH -->
+    <aside>
+      <div class="panel-title">1 — Pick a user &amp; tenant</div>
+
+      <div class="user-list">
+        <!-- Tenant A users -->
+        <div
+          style="
+            font-size: 10px;
+            color: var(--muted);
+            font-family: var(--mono);
+            padding: 4px 2px;
+            letter-spacing: 0.08em;
+          "
+        >
+          ACME_CORP
+        </div>
+
+        <div
+          class="user-card"
+          data-user="usr_1"
+          data-tenant="acme_corp"
+          data-role="admin"
+          data-name="Alice"
+          onclick="selectUser(this)"
+        >
+          <div class="user-avatar avatar-admin">AL</div>
+          <div class="user-info">
+            <div class="user-name">Alice</div>
+            <div class="user-meta">acme_corp · usr_1</div>
+          </div>
+          <span class="role-badge badge-admin">admin</span>
+        </div>
+
+        <div
+          class="user-card"
+          data-user="usr_2"
+          data-tenant="acme_corp"
+          data-role="accountant"
+          data-name="Bob"
+          onclick="selectUser(this)"
+        >
+          <div class="user-avatar avatar-accountant">BO</div>
+          <div class="user-info">
+            <div class="user-name">Bob</div>
+            <div class="user-meta">acme_corp · usr_2</div>
+          </div>
+          <span class="role-badge badge-accountant">accountant</span>
+        </div>
+
+        <div
+          class="user-card"
+          data-user="usr_3"
+          data-tenant="acme_corp"
+          data-role="viewer"
+          data-name="Carol"
+          onclick="selectUser(this)"
+        >
+          <div class="user-avatar avatar-viewer">CA</div>
+          <div class="user-info">
+            <div class="user-name">Carol</div>
+            <div class="user-meta">acme_corp · usr_3</div>
+          </div>
+          <span class="role-badge badge-viewer">viewer</span>
+        </div>
+
+        <div class="divider"></div>
+        <div
+          style="
+            font-size: 10px;
+            color: var(--muted);
+            font-family: var(--mono);
+            padding: 4px 2px;
+            letter-spacing: 0.08em;
+          "
+        >
+          GLOBEX_INC
+        </div>
+
+        <div
+          class="user-card"
+          data-user="usr_10"
+          data-tenant="globex_inc"
+          data-role="admin"
+          data-name="Hank"
+          onclick="selectUser(this)"
+        >
+          <div class="user-avatar avatar-b">HS</div>
+          <div class="user-info">
+            <div class="user-name">Hank Scorpio</div>
+            <div class="user-meta">globex_inc · usr_10</div>
+          </div>
+          <span class="role-badge badge-admin">admin</span>
+        </div>
+      </div>
+
+      <!-- Token + Claims -->
+      <div class="token-section">
+        <button class="login-btn" id="login-btn" onclick="doLogin()" disabled>
+          Select a user to login
+        </button>
+
+        <!-- Raw JWT -->
+        <div class="token-box" id="token-box" style="display: none">
+          <div class="token-label">JWT Token (3 parts)</div>
+          <div class="token-raw" id="token-display"></div>
+        </div>
+
+        <!-- Decoded claims -->
+        <div class="token-box" id="claims-box" style="display: none">
+          <div class="token-label">Decoded Claims</div>
+          <div class="claims-grid" id="claims-display"></div>
+        </div>
+
+        <!-- Permissions -->
+        <div class="token-box" id="perms-box" style="display: none">
+          <div class="token-label">Effective permissions</div>
+          <div class="perms-row" id="perms-display"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT PANEL: API CALLS -->
+    <main>
+      <div class="api-toolbar">
+        <button
+          class="api-btn"
+          id="btn-get"
+          onclick="apiGetInvoices()"
+          disabled
+        >
+          <span class="method m-get">GET</span> /api/invoices
+        </button>
+        <button class="api-btn" id="btn-post" onclick="openModal()" disabled>
+          <span class="method m-post">POST</span> /api/invoices
+        </button>
+        <button
+          class="api-btn"
+          id="btn-delete"
+          onclick="apiDeleteFirst()"
+          disabled
+        >
+          <span class="method m-delete">DEL</span> /api/invoices/:id
+        </button>
+        <button class="api-btn" id="btn-users" onclick="apiGetUsers()" disabled>
+          <span class="method m-get">GET</span> /api/users
+        </button>
+        <button class="api-btn" id="btn-me" onclick="apiGetMe()" disabled>
+          <span class="method m-get">GET</span> /api/me
+        </button>
+      </div>
+
+      <div class="log-area" id="log">
+        <div class="empty-state">
+          <div class="icon">⬡</div>
+          <p>
+            Select a user on the left, log in,<br />then fire API requests here.
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <!-- MODAL: create invoice -->
+    <div class="modal-overlay" id="modal">
+      <div class="modal">
+        <h3>POST /api/invoices — New Invoice</h3>
+        <div class="field">
+          <label>client</label>
+          <input
+            id="f-client"
+            type="text"
+            placeholder="e.g. Stark Industries"
+            value="Umbrella Corp"
+          />
+        </div>
+        <div class="field">
+          <label>amount</label>
+          <input
+            id="f-amount"
+            type="number"
+            placeholder="e.g. 5000"
+            value="7500"
+          />
+        </div>
+        <div class="modal-actions">
+          <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+          <button class="btn-submit" onclick="apiCreateInvoice()">
+            Send request
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* ================================================================
+   STATE
+   The frontend keeps exactly two pieces of state:
+     - selectedUser  → the user card the user clicked
+     - token         → the JWT received after login
+   Everything else is derived from the token's decoded claims.
+   ================================================================ */
+      const API = "http://localhost:3000";
+
+      let selectedUser = null; // { userId, tenantId, role, name }
+      let token = null; // raw JWT string
+      let claims = null; // decoded payload
+
+      const ALL_PERMS = ["read", "write", "delete", "manage_users"];
+
+      // ── SERVER STATUS CHECK ──────────────────────────────────────────
+      // Ping the login endpoint to see if the API is up.
+      async function checkServer() {
+        try {
+          await fetch(`${API}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: "{}",
+          });
+          dot("online", "API online");
+        } catch {
+          dot("offline", "API offline");
+        }
+      }
+      function dot(cls, label) {
+        document.getElementById("status-dot").className = cls;
+        document.getElementById("status-label").textContent = label;
+      }
+      checkServer();
+
+      /* ================================================================
+   STEP 1 — Select a user
+   Just stores the user data; does NOT make any network request yet.
+   ================================================================ */
+      function selectUser(card) {
+        document
+          .querySelectorAll(".user-card")
+          .forEach((c) => c.classList.remove("active"));
+        card.classList.add("active");
+
+        selectedUser = {
+          userId: card.dataset.user,
+          tenantId: card.dataset.tenant,
+          role: card.dataset.role,
+          name: card.dataset.name,
+        };
+
+        token = null;
+        claims = null;
+
+        // Reset UI
+        ["token-box", "claims-box", "perms-box"].forEach((id) => {
+          document.getElementById(id).style.display = "none";
+        });
+        setApiButtonsEnabled(false);
+
+        const btn = document.getElementById("login-btn");
+        btn.disabled = false;
+        btn.textContent = `Login as ${selectedUser.name} →`;
+      }
+
+      /* ================================================================
+   STEP 2 — Login (POST /auth/login)
+   Sends userId + tenantId to the API.
+   API validates, finds the user, and returns a signed JWT.
+   We store the token and decode it client-side to show the claims.
+   ================================================================ */
+      async function doLogin() {
+        const btn = document.getElementById("login-btn");
+        btn.disabled = true;
+        btn.textContent = "Logging in…";
+
+        try {
+          const res = await fetch(`${API}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: selectedUser.userId,
+              tenantId: selectedUser.tenantId,
+            }),
+          });
+          const data = await res.json();
+
+          if (!res.ok) throw new Error(data.error || "Login failed");
+
+          token = data.token;
+
+          /*  ─ Decode the JWT client-side ─────────────────────────
+        A JWT is three base64url segments joined by dots:
+          HEADER.PAYLOAD.SIGNATURE
+        We only need the PAYLOAD (index 1).
+        We do NOT verify the signature here — that's the server's job.
+        The client just reads the claims for display purposes.   */
+          const parts = token.split(".");
+          const payload = JSON.parse(
+            atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
+          );
+          claims = payload;
+
+          // Colour-code the raw token: red=header, blue=payload, green=signature
+          document.getElementById("token-display").innerHTML =
+            `<span class="h">${parts[0]}</span>.<span class="p">${parts[1]}</span>.<span class="s">${parts[2]}</span>`;
+          document.getElementById("token-box").style.display = "block";
+
+          // Render decoded claims
+          const claimRows = [
+            { key: "sub", val: claims.sub, cls: "accent" },
+            { key: "tenant_id", val: claims.tenant_id, cls: "amber" },
+            { key: "role", val: claims.role, cls: "green" },
+            { key: "permissions", val: claims.permissions.join(", "), cls: "" },
+            {
+              key: "exp",
+              val: new Date(claims.exp * 1000).toLocaleTimeString(),
+              cls: "",
+            },
+          ];
+          document.getElementById("claims-display").innerHTML = claimRows
+            .map(
+              (r) =>
+                `<div class="claim-row">
+        <span class="claim-key">${r.key}</span>
+        <span class="claim-val ${r.cls}">${r.val}</span>
+       </div>`,
+            )
+            .join("");
+          document.getElementById("claims-box").style.display = "block";
+
+          // Permissions chips — show all, grey out missing ones
+          document.getElementById("perms-display").innerHTML = ALL_PERMS.map(
+            (p) => {
+              const has = claims.permissions.includes(p);
+              return `<span class="perm-chip ${has ? "" : "missing"}">${p}</span>`;
+            },
+          ).join("");
+          document.getElementById("perms-box").style.display = "block";
+
+          btn.textContent = `✓ Logged in as ${selectedUser.name}`;
+          btn.style.background = "var(--green)";
+
+          setApiButtonsEnabled(true);
+          clearLog();
+          log("POST", "/auth/login", res.status, data);
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = `Retry login`;
+          btn.style.background = "var(--red)";
+          alert(
+            "Login error: " +
+              err.message +
+              "\n\nMake sure the API server is running on localhost:3000",
+          );
+        }
+      }
+
+      /* ================================================================
+   STEP 3 — API Calls
+   Every request attaches the JWT in the Authorization header.
+   The server's middleware:
+     1. authenticate()    → reads + verifies the JWT
+     2. tenantScope()     → filters req.db to this tenant
+     3. requirePermission → checks claims.permissions
+   ================================================================ */
+
+      // Authorization header helper — attaches the token
+      function authHeaders() {
+        return {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ← THIS is how every request is authenticated
+        };
+      }
+
+      async function apiGetInvoices() {
+        const res = await fetch(`${API}/api/invoices`, {
+          headers: authHeaders(),
+        });
+        const data = await res.json();
+        log("GET", "/api/invoices", res.status, data);
+      }
+
+      async function apiCreateInvoice() {
+        closeModal();
+        const client = document.getElementById("f-client").value;
+        const amount = Number(document.getElementById("f-amount").value);
+        const res = await fetch(`${API}/api/invoices`, {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({ client, amount }),
+        });
+        const data = await res.json();
+        log("POST", "/api/invoices", res.status, data);
+      }
+
+      async function apiDeleteFirst() {
+        // First get invoices to find an ID to delete
+        const listRes = await fetch(`${API}/api/invoices`, {
+          headers: authHeaders(),
+        });
+        const listData = await listRes.json();
+
+        if (!listData.invoices?.length) {
+          log("GET", "/api/invoices", listRes.status, listData);
+          return;
+        }
+
+        const id = listData.invoices[0].id;
+        const res = await fetch(`${API}/api/invoices/${id}`, {
+          method: "DELETE",
+          headers: authHeaders(),
+        });
+        const data = await res.json();
+        log("DELETE", `/api/invoices/${id}`, res.status, data);
+      }
+
+      async function apiGetUsers() {
+        const res = await fetch(`${API}/api/users`, { headers: authHeaders() });
+        const data = await res.json();
+        log("GET", "/api/users", res.status, data);
+      }
+
+      async function apiGetMe() {
+        const res = await fetch(`${API}/api/me`, { headers: authHeaders() });
+        const data = await res.json();
+        log("GET", "/api/me", res.status, data);
+      }
+
+      /* ================================================================
+   LOG RENDERER
+   Each API response gets a "request card" showing:
+     - Method, URL, HTTP status
+     - Pretty-printed JSON response body
+   ================================================================ */
+      function log(method, url, status, body) {
+        const isOk = status >= 200 && status < 300;
+        const methodClass =
+          { GET: "m-get", POST: "m-post", DELETE: "m-delete" }[method] || "";
+
+        const entry = document.createElement("div");
+        entry.className = "log-entry";
+        entry.innerHTML = `
+    <div class="log-header">
+      <span class="log-method method ${methodClass}">${method}</span>
+      <span class="log-url">${url}</span>
+      <span class="log-status ${isOk ? "s-ok" : "s-err"}">${status} ${isOk ? "OK" : "Error"}</span>
+    </div>
+    <div class="log-body">${highlight(JSON.stringify(body, null, 2))}</div>`;
+
+        const logArea = document.getElementById("log");
+        // Remove empty state if present
+        logArea.querySelector(".empty-state")?.remove();
+        // Prepend — newest first
+        logArea.insertBefore(entry, logArea.firstChild);
+      }
+
+      // Minimal JSON syntax highlighter
+      function highlight(json) {
+        return json
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(
+            /("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+            (m) => {
+              if (/^"/.test(m)) {
+                if (/:$/.test(m)) return `<span class="key">${m}</span>`;
+                return `<span class="str">${m}</span>`;
+              }
+              if (/true|false/.test(m)) return `<span class="bool">${m}</span>`;
+              if (/null/.test(m)) return `<span class="null">${m}</span>`;
+              return `<span class="num">${m}</span>`;
+            },
+          );
+      }
+
+      function clearLog() {
+        document.getElementById("log").innerHTML = "";
+      }
+
+      function setApiButtonsEnabled(enabled) {
+        ["btn-get", "btn-post", "btn-delete", "btn-users", "btn-me"].forEach(
+          (id) => {
+            document.getElementById(id).disabled = !enabled;
+          },
+        );
+      }
+
+      function openModal() {
+        document.getElementById("modal").classList.add("open");
+      }
+      function closeModal() {
+        document.getElementById("modal").classList.remove("open");
+      }
+    </script>
+  </body>
+</html>
