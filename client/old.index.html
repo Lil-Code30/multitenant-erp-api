@@ -3,13 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Multitenant ERP — Permission-driven UI</title>
+    <title>Multitenant ERP — Frontend Demo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
     <style>
+      /* ── DESIGN TOKENS ────────────────────────────────────── */
       :root {
         --bg: #0d0f12;
         --surface: #141720;
@@ -34,6 +35,7 @@
         margin: 0;
         padding: 0;
       }
+
       body {
         background: var(--bg);
         color: var(--text);
@@ -45,7 +47,7 @@
         grid-template-columns: 340px 1fr;
       }
 
-      /* ── TOPBAR ── */
+      /* ── TOPBAR ───────────────────────────────────────────── */
       header {
         grid-column: 1 / -1;
         background: var(--surface);
@@ -88,7 +90,7 @@
         color: var(--dim);
       }
 
-      /* ── LEFT PANEL ── */
+      /* ── LEFT PANEL — AUTH ────────────────────────────────── */
       aside {
         background: var(--surface);
         border-right: 1px solid var(--border);
@@ -105,6 +107,8 @@
         text-transform: uppercase;
         border-bottom: 1px solid var(--border);
       }
+
+      /* User cards */
       .user-list {
         padding: 12px;
         display: flex;
@@ -194,12 +198,8 @@
         background: rgba(74, 83, 104, 0.3);
         color: var(--muted);
       }
-      .divider {
-        height: 1px;
-        background: var(--border);
-        margin: 4px 0;
-      }
 
+      /* Token section */
       .token-section {
         padding: 12px;
         border-top: 1px solid var(--border);
@@ -238,6 +238,8 @@
       .token-raw span.s {
         color: var(--green);
       }
+
+      /* Claims display */
       .claims-grid {
         display: flex;
         flex-direction: column;
@@ -274,24 +276,7 @@
       .claim-val.amber {
         color: var(--amber);
       }
-      .perms-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-      }
-      .perm-chip {
-        font-family: var(--mono);
-        font-size: 10px;
-        padding: 2px 7px;
-        border-radius: 3px;
-        background: rgba(62, 207, 110, 0.1);
-        color: var(--green);
-      }
-      .perm-chip.missing {
-        background: rgba(74, 83, 104, 0.2);
-        color: var(--muted);
-        text-decoration: line-through;
-      }
+
       .login-btn {
         background: var(--accent);
         color: #fff;
@@ -313,32 +298,19 @@
         cursor: not-allowed;
       }
 
-      /* ── RIGHT PANEL ── */
+      /* ── RIGHT PANEL — API INTERACTION ───────────────────── */
       main {
         display: grid;
         grid-template-rows: auto 1fr;
         overflow: hidden;
       }
 
-      /* ── PERMISSION-DRIVEN TOOLBAR ── */
-      /*
-      The toolbar is rebuilt on every login.
-      Buttons are created ONLY if the user has the required permission.
-      There are no hidden/disabled buttons — they simply don't exist in the DOM.
-    */
       .api-toolbar {
         padding: 12px 20px;
         border-bottom: 1px solid var(--border);
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        align-items: center;
-        min-height: 54px;
-      }
-      .toolbar-hint {
-        font-size: 11px;
-        color: var(--muted);
-        font-family: var(--mono);
       }
       .api-btn {
         display: flex;
@@ -355,21 +327,14 @@
         transition:
           border-color 0.15s,
           color 0.15s;
-        animation: fadeIn 0.25s ease both;
-      }
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(-4px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
       }
       .api-btn:hover {
         border-color: var(--accent);
         color: var(--bright);
+      }
+      .api-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
       }
       .method {
         font-size: 10px;
@@ -390,43 +355,7 @@
         color: var(--red);
       }
 
-      /* ── PERMISSION WALL ── */
-      /*
-      Shown in place of a section when the user lacks permission entirely.
-      The user still knows the section exists, but can't access it.
-    */
-      .perm-wall {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 40px 20px;
-        background: rgba(247, 95, 95, 0.03);
-        border: 1px dashed rgba(247, 95, 95, 0.2);
-        border-radius: 10px;
-        text-align: center;
-        animation: fadeIn 0.2s ease;
-      }
-      .perm-wall .lock-icon {
-        font-size: 22px;
-        opacity: 0.4;
-      }
-      .perm-wall .wall-title {
-        font-size: 13px;
-        color: var(--dim);
-      }
-      .perm-wall .wall-reason {
-        font-family: var(--mono);
-        font-size: 11px;
-        color: var(--red);
-        opacity: 0.7;
-        background: rgba(247, 95, 95, 0.08);
-        padding: 3px 9px;
-        border-radius: 4px;
-      }
-
-      /* ── LOG ── */
+      /* Log area */
       .log-area {
         overflow-y: auto;
         padding: 16px 20px;
@@ -508,6 +437,7 @@
       .log-body .null {
         color: var(--red);
       }
+
       .empty-state {
         text-align: center;
         padding: 60px 20px;
@@ -522,7 +452,7 @@
         font-size: 13px;
       }
 
-      /* ── MODAL ── */
+      /* Modal for POST invoice */
       .modal-overlay {
         display: none;
         position: fixed;
@@ -602,20 +532,50 @@
       .btn-submit:hover {
         opacity: 0.85;
       }
+
+      /* Permissions legend */
+      .perms-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .perm-chip {
+        font-family: var(--mono);
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 3px;
+        background: rgba(62, 207, 110, 0.1);
+        color: var(--green);
+      }
+      .perm-chip.missing {
+        background: rgba(74, 83, 104, 0.2);
+        color: var(--muted);
+        text-decoration: line-through;
+      }
+
+      .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 4px 0;
+      }
     </style>
   </head>
   <body>
+    <!-- TOP BAR -->
     <header>
       <span class="logo">ERP//MT</span>
       <span class="sep">|</span>
-      <span class="tagline">Permission-driven UI demo</span>
+      <span class="tagline">Multitenant API demo — localhost:3000</span>
       <span id="status-dot"></span>
       <span id="status-label">checking...</span>
     </header>
 
+    <!-- LEFT PANEL: AUTH -->
     <aside>
       <div class="panel-title">1 — Pick a user &amp; tenant</div>
+
       <div class="user-list">
+        <!-- Tenant A users -->
         <div
           style="
             font-size: 10px;
@@ -627,6 +587,7 @@
         >
           ACME_CORP
         </div>
+
         <div
           class="user-card"
           data-user="usr_1"
@@ -638,10 +599,11 @@
           <div class="user-avatar avatar-admin">AL</div>
           <div class="user-info">
             <div class="user-name">Alice</div>
-            <div class="user-meta">acme_corp · admin</div>
+            <div class="user-meta">acme_corp · usr_1</div>
           </div>
           <span class="role-badge badge-admin">admin</span>
         </div>
+
         <div
           class="user-card"
           data-user="usr_2"
@@ -653,10 +615,11 @@
           <div class="user-avatar avatar-accountant">BO</div>
           <div class="user-info">
             <div class="user-name">Bob</div>
-            <div class="user-meta">acme_corp · accountant</div>
+            <div class="user-meta">acme_corp · usr_2</div>
           </div>
           <span class="role-badge badge-accountant">accountant</span>
         </div>
+
         <div
           class="user-card"
           data-user="usr_3"
@@ -668,10 +631,11 @@
           <div class="user-avatar avatar-viewer">CA</div>
           <div class="user-info">
             <div class="user-name">Carol</div>
-            <div class="user-meta">acme_corp · viewer</div>
+            <div class="user-meta">acme_corp · usr_3</div>
           </div>
           <span class="role-badge badge-viewer">viewer</span>
         </div>
+
         <div class="divider"></div>
         <div
           style="
@@ -684,35 +648,43 @@
         >
           GLOBEX_INC
         </div>
+
         <div
           class="user-card"
           data-user="usr_10"
           data-tenant="globex_inc"
           data-role="admin"
-          data-name="Hank Scorpio"
+          data-name="Hank"
           onclick="selectUser(this)"
         >
           <div class="user-avatar avatar-b">HS</div>
           <div class="user-info">
             <div class="user-name">Hank Scorpio</div>
-            <div class="user-meta">globex_inc · admin</div>
+            <div class="user-meta">globex_inc · usr_10</div>
           </div>
           <span class="role-badge badge-admin">admin</span>
         </div>
       </div>
 
+      <!-- Token + Claims -->
       <div class="token-section">
         <button class="login-btn" id="login-btn" onclick="doLogin()" disabled>
           Select a user to login
         </button>
+
+        <!-- Raw JWT -->
         <div class="token-box" id="token-box" style="display: none">
           <div class="token-label">JWT Token (3 parts)</div>
           <div class="token-raw" id="token-display"></div>
         </div>
+
+        <!-- Decoded claims -->
         <div class="token-box" id="claims-box" style="display: none">
           <div class="token-label">Decoded Claims</div>
           <div class="claims-grid" id="claims-display"></div>
         </div>
+
+        <!-- Permissions -->
         <div class="token-box" id="perms-box" style="display: none">
           <div class="token-label">Effective permissions</div>
           <div class="perms-row" id="perms-display"></div>
@@ -720,14 +692,34 @@
       </div>
     </aside>
 
+    <!-- RIGHT PANEL: API CALLS -->
     <main>
-      <!--
-    The toolbar is EMPTY on load.
-    It gets rebuilt by renderToolbar() after login,
-    showing ONLY the buttons the user has permission to use.
-  -->
-      <div class="api-toolbar" id="toolbar">
-        <span class="toolbar-hint">← log in first</span>
+      <div class="api-toolbar">
+        <button
+          class="api-btn"
+          id="btn-get"
+          onclick="apiGetInvoices()"
+          disabled
+        >
+          <span class="method m-get">GET</span> /api/invoices
+        </button>
+        <button class="api-btn" id="btn-post" onclick="openModal()" disabled>
+          <span class="method m-post">POST</span> /api/invoices
+        </button>
+        <button
+          class="api-btn"
+          id="btn-delete"
+          onclick="apiDeleteFirst()"
+          disabled
+        >
+          <span class="method m-delete">DEL</span> /api/invoices/:id
+        </button>
+        <button class="api-btn" id="btn-users" onclick="apiGetUsers()" disabled>
+          <span class="method m-get">GET</span> /api/users
+        </button>
+        <button class="api-btn" id="btn-me" onclick="apiGetMe()" disabled>
+          <span class="method m-get">GET</span> /api/me
+        </button>
       </div>
 
       <div class="log-area" id="log">
@@ -740,16 +732,27 @@
       </div>
     </main>
 
+    <!-- MODAL: create invoice -->
     <div class="modal-overlay" id="modal">
       <div class="modal">
         <h3>POST /api/invoices — New Invoice</h3>
         <div class="field">
-          <label>client</label
-          ><input id="f-client" type="text" value="Umbrella Corp" />
+          <label>client</label>
+          <input
+            id="f-client"
+            type="text"
+            placeholder="e.g. Stark Industries"
+            value="Umbrella Corp"
+          />
         </div>
         <div class="field">
-          <label>amount</label
-          ><input id="f-amount" type="number" value="7500" />
+          <label>amount</label>
+          <input
+            id="f-amount"
+            type="number"
+            placeholder="e.g. 5000"
+            value="7500"
+          />
         </div>
         <div class="modal-actions">
           <button class="btn-cancel" onclick="closeModal()">Cancel</button>
@@ -762,67 +765,22 @@
 
     <script>
       /* ================================================================
-   PERMISSION → UI MAP
-   ================================================================
-   This is the core of permission-driven rendering.
-
-   Each entry defines:
-     - needs    : which permission is required
-     - method   : for the label
-     - endpoint : for the label
-     - action   : what happens when clicked
-     - delay    : stagger animation timing
-
-   renderToolbar() loops over this list and creates a button
-   ONLY if claims.permissions includes the required permission.
-   If it doesn't, the button is simply never added to the DOM.
+   STATE
+   The frontend keeps exactly two pieces of state:
+     - selectedUser  → the user card the user clicked
+     - token         → the JWT received after login
+   Everything else is derived from the token's decoded claims.
    ================================================================ */
-      const TOOLBAR_ITEMS = [
-        {
-          needs: "read",
-          method: "GET",
-          endpoint: "/api/invoices",
-          action: apiGetInvoices,
-          delay: 0,
-        },
-        {
-          needs: "write",
-          method: "POST",
-          endpoint: "/api/invoices",
-          action: openModal,
-          delay: 50,
-        },
-        {
-          needs: "delete",
-          method: "DEL",
-          endpoint: "/api/invoices",
-          action: apiDeleteFirst,
-          delay: 100,
-        },
-        {
-          needs: "manage_users",
-          method: "GET",
-          endpoint: "/api/users",
-          action: apiGetUsers,
-          delay: 150,
-        },
-        {
-          needs: "read",
-          method: "GET",
-          endpoint: "/api/me",
-          action: apiGetMe,
-          delay: 200,
-        },
-      ];
-
-      const ALL_PERMS = ["read", "write", "delete", "manage_users"];
       const API = "http://localhost:3000";
 
-      let selectedUser = null;
-      let token = null;
-      let claims = null;
+      let selectedUser = null; // { userId, tenantId, role, name }
+      let token = null; // raw JWT string
+      let claims = null; // decoded payload
 
-      // ── SERVER STATUS ────────────────────────────────────────────────
+      const ALL_PERMS = ["read", "write", "delete", "manage_users"];
+
+      // ── SERVER STATUS CHECK ──────────────────────────────────────────
+      // Ping the login endpoint to see if the API is up.
       async function checkServer() {
         try {
           await fetch(`${API}/auth/login`, {
@@ -841,35 +799,48 @@
       }
       checkServer();
 
-      // ── SELECT USER ──────────────────────────────────────────────────
+      /* ================================================================
+   STEP 1 — Select a user
+   Just stores the user data; does NOT make any network request yet.
+   ================================================================ */
       function selectUser(card) {
         document
           .querySelectorAll(".user-card")
           .forEach((c) => c.classList.remove("active"));
         card.classList.add("active");
+
         selectedUser = {
           userId: card.dataset.user,
           tenantId: card.dataset.tenant,
           role: card.dataset.role,
           name: card.dataset.name,
         };
+
         token = null;
         claims = null;
-        ["token-box", "claims-box", "perms-box"].forEach(
-          (id) => (document.getElementById(id).style.display = "none"),
-        );
-        resetToolbar();
+
+        // Reset UI
+        ["token-box", "claims-box", "perms-box"].forEach((id) => {
+          document.getElementById(id).style.display = "none";
+        });
+        setApiButtonsEnabled(false);
+
         const btn = document.getElementById("login-btn");
         btn.disabled = false;
-        btn.style.background = "var(--accent)";
         btn.textContent = `Login as ${selectedUser.name} →`;
       }
 
-      // ── LOGIN ────────────────────────────────────────────────────────
+      /* ================================================================
+   STEP 2 — Login (POST /auth/login)
+   Sends userId + tenantId to the API.
+   API validates, finds the user, and returns a signed JWT.
+   We store the token and decode it client-side to show the claims.
+   ================================================================ */
       async function doLogin() {
         const btn = document.getElementById("login-btn");
         btn.disabled = true;
         btn.textContent = "Logging in…";
+
         try {
           const res = await fetch(`${API}/auth/login`, {
             method: "POST",
@@ -880,23 +851,30 @@
             }),
           });
           const data = await res.json();
-          if (!res.ok) throw new Error(data.error);
+
+          if (!res.ok) throw new Error(data.error || "Login failed");
+
           token = data.token;
 
-          // Decode JWT payload (middle segment, base64url → JSON)
+          /*  ─ Decode the JWT client-side ─────────────────────────
+        A JWT is three base64url segments joined by dots:
+          HEADER.PAYLOAD.SIGNATURE
+        We only need the PAYLOAD (index 1).
+        We do NOT verify the signature here — that's the server's job.
+        The client just reads the claims for display purposes.   */
           const parts = token.split(".");
           const payload = JSON.parse(
             atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
           );
           claims = payload;
 
-          // Show raw token
+          // Colour-code the raw token: red=header, blue=payload, green=signature
           document.getElementById("token-display").innerHTML =
             `<span class="h">${parts[0]}</span>.<span class="p">${parts[1]}</span>.<span class="s">${parts[2]}</span>`;
           document.getElementById("token-box").style.display = "block";
 
-          // Show decoded claims
-          const rows = [
+          // Render decoded claims
+          const claimRows = [
             { key: "sub", val: claims.sub, cls: "accent" },
             { key: "tenant_id", val: claims.tenant_id, cls: "amber" },
             { key: "role", val: claims.role, cls: "green" },
@@ -907,18 +885,18 @@
               cls: "",
             },
           ];
-          document.getElementById("claims-display").innerHTML = rows
+          document.getElementById("claims-display").innerHTML = claimRows
             .map(
               (r) =>
                 `<div class="claim-row">
         <span class="claim-key">${r.key}</span>
-        <span class="claim-val ${r.cls}">${r.val || "—"}</span>
+        <span class="claim-val ${r.cls}">${r.val}</span>
        </div>`,
             )
             .join("");
           document.getElementById("claims-box").style.display = "block";
 
-          // Show permission chips
+          // Permissions chips — show all, grey out missing ones
           document.getElementById("perms-display").innerHTML = ALL_PERMS.map(
             (p) => {
               const has = claims.permissions.includes(p);
@@ -930,152 +908,103 @@
           btn.textContent = `✓ Logged in as ${selectedUser.name}`;
           btn.style.background = "var(--green)";
 
-          // ── THIS IS THE KEY CALL ──────────────────────────────────────
-          // After login we know the permissions — rebuild the UI to match.
-          renderToolbar(claims.permissions);
+          setApiButtonsEnabled(true);
           clearLog();
           log("POST", "/auth/login", res.status, data);
         } catch (err) {
           btn.disabled = false;
+          btn.textContent = `Retry login`;
           btn.style.background = "var(--red)";
-          btn.textContent = "Retry";
           alert(
             "Login error: " +
               err.message +
-              "\n\nMake sure the API is running on localhost:3000",
+              "\n\nMake sure the API server is running on localhost:3000",
           );
         }
       }
 
       /* ================================================================
-   RENDER TOOLBAR — Permission-driven rendering
-   ================================================================
-   This function is the heart of the pattern.
-
-   It receives the user's permissions array, then for each item
-   in TOOLBAR_ITEMS it checks: does the user have the required
-   permission? If yes → create the button. If no → skip entirely.
-
-   Result: the DOM contains ONLY what the user is allowed to see.
-   There are no hidden elements, no disabled states, no grey buttons.
-   The functionality simply does not exist in the page.
+   STEP 3 — API Calls
+   Every request attaches the JWT in the Authorization header.
+   The server's middleware:
+     1. authenticate()    → reads + verifies the JWT
+     2. tenantScope()     → filters req.db to this tenant
+     3. requirePermission → checks claims.permissions
    ================================================================ */
-      function renderToolbar(userPermissions) {
-        const toolbar = document.getElementById("toolbar");
-        toolbar.innerHTML = "";
 
-        let count = 0;
-        TOOLBAR_ITEMS.forEach((item, i) => {
-          // ← The permission check: if not allowed, don't render anything
-          if (!userPermissions.includes(item.needs)) return;
-
-          const methodClass =
-            { GET: "m-get", POST: "m-post", DEL: "m-delete" }[item.method] ||
-            "";
-
-          const btn = document.createElement("button");
-          btn.className = "api-btn";
-          btn.style.animationDelay = `${item.delay}ms`;
-          btn.innerHTML = `<span class="method ${methodClass}">${item.method}</span> ${item.endpoint}`;
-          btn.addEventListener("click", item.action);
-          toolbar.appendChild(btn);
-          count++;
-        });
-
-        // If the user has no permissions at all (shouldn't happen, but defensive)
-        if (count === 0) {
-          toolbar.innerHTML = `<span class="toolbar-hint" style="color:var(--red)">No actions available for this role</span>`;
-        }
-      }
-
-      /* ================================================================
-   PERMISSION WALL — for section-level access control
-   ================================================================
-   If you have full page sections (not just buttons) that require
-   a permission, call this to render a "you can't see this" block
-   instead of the real content.
-
-   Usage example:
-     if (!can('manage_users')) {
-       container.appendChild(permWall('manage_users'));
-       return;
-     }
-     // render the actual users table
-   ================================================================ */
-      function can(permission) {
-        return claims?.permissions?.includes(permission) ?? false;
-      }
-
-      function permWall(requiredPermission) {
-        const wall = document.createElement("div");
-        wall.className = "perm-wall";
-        wall.innerHTML = `
-    <div class="lock-icon">⊘</div>
-    <div class="wall-title">You don't have access to this section</div>
-    <div class="wall-reason">requires: ${requiredPermission}</div>`;
-        return wall;
-      }
-
-      function resetToolbar() {
-        document.getElementById("toolbar").innerHTML =
-          `<span class="toolbar-hint">← log in first</span>`;
-      }
-
-      // ── API CALLS ────────────────────────────────────────────────────
+      // Authorization header helper — attaches the token
       function authHeaders() {
         return {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // ← THIS is how every request is authenticated
         };
       }
+
       async function apiGetInvoices() {
         const res = await fetch(`${API}/api/invoices`, {
           headers: authHeaders(),
         });
-        log("GET", "/api/invoices", res.status, await res.json());
+        const data = await res.json();
+        log("GET", "/api/invoices", res.status, data);
       }
+
       async function apiCreateInvoice() {
         closeModal();
+        const client = document.getElementById("f-client").value;
+        const amount = Number(document.getElementById("f-amount").value);
         const res = await fetch(`${API}/api/invoices`, {
           method: "POST",
           headers: authHeaders(),
-          body: JSON.stringify({
-            client: document.getElementById("f-client").value,
-            amount: Number(document.getElementById("f-amount").value),
-          }),
+          body: JSON.stringify({ client, amount }),
         });
-        log("POST", "/api/invoices", res.status, await res.json());
+        const data = await res.json();
+        log("POST", "/api/invoices", res.status, data);
       }
+
       async function apiDeleteFirst() {
+        // First get invoices to find an ID to delete
         const listRes = await fetch(`${API}/api/invoices`, {
           headers: authHeaders(),
         });
         const listData = await listRes.json();
+
         if (!listData.invoices?.length) {
           log("GET", "/api/invoices", listRes.status, listData);
           return;
         }
+
         const id = listData.invoices[0].id;
         const res = await fetch(`${API}/api/invoices/${id}`, {
           method: "DELETE",
           headers: authHeaders(),
         });
-        log("DELETE", `/api/invoices/${id}`, res.status, await res.json());
-      }
-      async function apiGetUsers() {
-        const res = await fetch(`${API}/api/users`, { headers: authHeaders() });
-        log("GET", "/api/users", res.status, await res.json());
-      }
-      async function apiGetMe() {
-        const res = await fetch(`${API}/api/me`, { headers: authHeaders() });
-        log("GET", "/api/me", res.status, await res.json());
+        const data = await res.json();
+        log("DELETE", `/api/invoices/${id}`, res.status, data);
       }
 
-      // ── LOG ──────────────────────────────────────────────────────────
+      async function apiGetUsers() {
+        const res = await fetch(`${API}/api/users`, { headers: authHeaders() });
+        const data = await res.json();
+        log("GET", "/api/users", res.status, data);
+      }
+
+      async function apiGetMe() {
+        const res = await fetch(`${API}/api/me`, { headers: authHeaders() });
+        const data = await res.json();
+        log("GET", "/api/me", res.status, data);
+      }
+
+      /* ================================================================
+   LOG RENDERER
+   Each API response gets a "request card" showing:
+     - Method, URL, HTTP status
+     - Pretty-printed JSON response body
+   ================================================================ */
       function log(method, url, status, body) {
         const isOk = status >= 200 && status < 300;
         const methodClass =
           { GET: "m-get", POST: "m-post", DELETE: "m-delete" }[method] || "";
+
         const entry = document.createElement("div");
         entry.className = "log-entry";
         entry.innerHTML = `
@@ -1085,31 +1014,46 @@
       <span class="log-status ${isOk ? "s-ok" : "s-err"}">${status} ${isOk ? "OK" : "Error"}</span>
     </div>
     <div class="log-body">${highlight(JSON.stringify(body, null, 2))}</div>`;
+
         const logArea = document.getElementById("log");
+        // Remove empty state if present
         logArea.querySelector(".empty-state")?.remove();
+        // Prepend — newest first
         logArea.insertBefore(entry, logArea.firstChild);
       }
+
+      // Minimal JSON syntax highlighter
       function highlight(json) {
         return json
           .replace(/&/g, "&amp;")
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;")
           .replace(
-            /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+            /("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
             (m) => {
-              if (/^"/.test(m))
-                return /:$/.test(m)
-                  ? `<span class="key">${m}</span>`
-                  : `<span class="str">${m}</span>`;
+              if (/^"/.test(m)) {
+                if (/:$/.test(m)) return `<span class="key">${m}</span>`;
+                return `<span class="str">${m}</span>`;
+              }
               if (/true|false/.test(m)) return `<span class="bool">${m}</span>`;
               if (/null/.test(m)) return `<span class="null">${m}</span>`;
               return `<span class="num">${m}</span>`;
             },
           );
       }
+
       function clearLog() {
         document.getElementById("log").innerHTML = "";
       }
+
+      function setApiButtonsEnabled(enabled) {
+        ["btn-get", "btn-post", "btn-delete", "btn-users", "btn-me"].forEach(
+          (id) => {
+            document.getElementById(id).disabled = !enabled;
+          },
+        );
+      }
+
       function openModal() {
         document.getElementById("modal").classList.add("open");
       }
