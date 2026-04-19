@@ -19,6 +19,7 @@ const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(express.json());
+app.use(require("cors")());
 
 // ─── SECRET KEY ──────────────────────────────────────────────────
 const JWT_SECRET = "super-secret-key-change-in-prod";
